@@ -24,14 +24,6 @@ CLIENT_SECRET_FILE = 'configs/client_secret.json'
 APPLICATION_NAME = 'Google Calendar API Python Quickstart'
 
 def get_credentials():
-    """Gets valid user credentials from storage.
-
-    If nothing has been stored, or if the stored credentials are invalid,
-    the OAuth2 flow is completed to obtain the new credentials.
-
-    Returns:
-        Credentials, the obtained credential.
-    """
     home_dir = os.path.expanduser('~')
     credential_dir = os.path.join(home_dir,'.credentials')
     if not os.path.exists(credential_dir):
@@ -49,6 +41,7 @@ def get_credentials():
             credentials = tools.run(flow, store)
         print('Storing credentials to ' + credential_path)
     return credentials
+
 def build_event(name,run_time,start_date,end_date):
 	event = {}
 	event['start'] = {}
@@ -64,31 +57,39 @@ def build_event(name,run_time,start_date,end_date):
 	event['start']['timeZone'] = 'America/New_York'
 	event['end']['dateTime'] = end_str
 	event['end']['timeZone'] = 'America/New_York'
-
 	return event
+
+def get_cal_id(service):
+    cals = service.calendarList().list().execute()
+    for cal in cals['items']:
+        if cal['summary'] == 'Sun-Ray Cinema':
+            cal_id = cal['id']
+    return cal_id
+	
+def clear_calendar(cal_id,service):
+    now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time   
+    eventsResult = service.events().list(calendarId=cal_id, timeMin=now, singleEvents=True, orderBy='startTime').execute()
+    for event in eventsResult['items']:
+		service.events().delete(calendarId=cal_id, eventId=event['id']).execute()
+
+def add_event(service, ev, cal_id):
+	service.events().insert(calendarId=cal_id, body=ev).execute()
 	
 def main():
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http)
-    now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time   
     
-    #list all calendars
-    cals = service.calendarList().list().execute()
-    for cal in cals['items']:
-		if cal['summary'] == 'Sun-Ray Cinema':
-			cal_id = cal['id']
+    #get calendar ID
+    cal_id = get_cal_id(service)
 
     #first delete all upcoming events
-    eventsResult = service.events().list(calendarId=cal_id, timeMin=now, singleEvents=True, orderBy='startTime').execute()
-    for event in eventsResult['items']:
-		service.events().delete(calendarId=cal_id, eventId=event['id']).execute()
+    clear_calendar(cal_id,service)
 
-    #now add new events
-    #first get list of current SunRay movies
+    #now add new events - first get list of current SunRay showtimes
     movies = sunray.main()
-    with open('temp_file.txt','w+b') as f:
-		f.write(json.dumps(movies,indent=4))
+    
+    #now loop through and add event
     for movie in movies:
         name = movie['name']
         run_time = parser.parse(movie['run_time']).time()
@@ -99,7 +100,10 @@ def main():
         show_start_with_tz = show_start_date_time
         show_end_with_tz = show_end_date_time
         ev = build_event(name,run_time,show_start_with_tz,show_end_with_tz)
-        service.events().insert(calendarId=cal_id, body=ev).execute()
+        add_event(service,ev,cal_id)
 
 if __name__ == '__main__':
+    main()
+
+def lambda_handler(event, context):
     main()

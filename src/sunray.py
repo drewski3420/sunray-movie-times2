@@ -69,7 +69,9 @@ def split_strings_into_movies(strings,date):
                 if idx2 in movie_starts:
                     break
                 else:
-                    movie['show_time_{}'.format(run_time_counter)] = strings[idx + 2 + run_time_counter]
+                    the_str = strings[idx + 2 + run_time_counter]
+                    the_str = the_str.replace('(','').replace(')','').replace('Sold Out','').strip()
+                    movie['show_time_{}'.format(run_time_counter)] = the_str#strings[idx + 2 + run_time_counter]
                     run_time_counter += 1
             movie = split_show_times(movie)
             movies += movie
@@ -77,15 +79,14 @@ def split_strings_into_movies(strings,date):
 
 def split_show_times(movie):
     temp_movies = []
-    temp_movie = {}
-    temp_movie['name'] = movie['name']
-    temp_movie['run_time'] = movie['run_time']
-    temp_movie['date'] = movie['date']
     for key,value in movie.items():
+        temp_movie = {}
+        temp_movie['name'] = movie['name']
+        temp_movie['run_time'] = movie['run_time']
+        temp_movie['date'] = movie['date']
         if 'show_time' in key:
-            for val in value.split(u'\u00A0'):
-                temp_movie['show_time'] = d.strftime(parser.parse(val),'%H:%M')
-                temp_movies.append(temp_movie)
+            temp_movie['show_time'] = d.strftime(parser.parse(value),'%H:%M')
+            temp_movies.append(temp_movie)
     return temp_movies
     
 
@@ -104,10 +105,10 @@ def get_run_time(str_run_time):
 def main():
     movies = []
     for date in get_dates():
-        strings = get_daily_html(date)
-        strings = get_movie_details_from_html(strings)
-        daily_movies = split_strings_into_movies(strings,date)
-        movies += daily_movies
+		strings = get_daily_html(date)
+		strings = get_movie_details_from_html(strings)
+		daily_movies = split_strings_into_movies(strings,date)            
+		movies += daily_movies
     return movies
 
     
