@@ -3,7 +3,6 @@ from datetime import datetime as d
 from bs4 import BeautifulSoup
 import requests
 from dateutil import parser
-import omdb
 import os
 
 ENDPOINT = 'http://14438.formovietickets.com:2235/T.ASP'
@@ -51,11 +50,9 @@ def get_omdb_movie_details(movie_name):
     URL = 'http://www.omdbapi.com/'
     details = {'plot' : ''
                ,'id' : ''
-               ,'year' : ''
-            }
-
-	dir = os.path.dirname(__file__)
-	fn = os.path.join(dir, '/configs/omdbapi.json')
+               ,'year' : ''}
+    dir = os.path.dirname(__file__)
+    fn = os.path.join(dir, 'configs/omdbapi.json')
     with open(fn) as data_file:
         apikey = json.load(data_file)['apikey']
 

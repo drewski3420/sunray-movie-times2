@@ -43,25 +43,25 @@ def get_credentials():
     return credentials
 
 def build_event(name,run_time,start_date,end_date,plot,id,year):
-	event = {}
-	event['start'] = {}
-	event['end'] = {}
-	event['attachments'] = {}
-	event['attendees'] = {}
-	start_str = start_date.strftime('%Y-%m-%dT%H:%M:%S')
-	end_str = end_date.strftime('%Y-%m-%dT%H:%M:%S')
-	event['summary'] = name
-	event['location'] = '1028 Park St, Jacksonville, FL 32204'
-	description = 'http://www.imdb.com/title/{}/'.format(id)
-	description += '\nYear: {}'.format(year)
-	description += '\nPlot: {}'.format(plot)
-	description += '\nRun Time: {}'.format(run_time)
-	event['description'] = description
-	event['start']['dateTime'] = start_str
-	event['start']['timeZone'] = 'America/New_York'
-	event['end']['dateTime'] = end_str
-	event['end']['timeZone'] = 'America/New_York'
-	return event
+    event = {}
+    event['start'] = {}
+    event['end'] = {}
+    event['attachments'] = {}
+    event['attendees'] = {}
+    start_str = start_date.strftime('%Y-%m-%dT%H:%M:%S')
+    end_str = end_date.strftime('%Y-%m-%dT%H:%M:%S')
+    event['summary'] = name
+    event['location'] = '1028 Park St, Jacksonville, FL 32204'
+    description = 'http://www.imdb.com/title/{}/'.format(id)
+    description += '\nYear: {}'.format(year)
+    description += '\nPlot: {}'.format(plot)
+    description += '\nRun Time: {}'.format(run_time)
+    event['description'] = description
+    event['start']['dateTime'] = start_str
+    event['start']['timeZone'] = 'America/New_York'
+    event['end']['dateTime'] = end_str
+    event['end']['timeZone'] = 'America/New_York'
+    return event
 
 def get_cal_id(service):
     cals = service.calendarList().list().execute()
@@ -69,16 +69,16 @@ def get_cal_id(service):
         if cal['summary'] == 'Sun-Ray Cinema':
             cal_id = cal['id']
     return cal_id
-	
+    
 def clear_calendar(cal_id,service):
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time   
     eventsResult = service.events().list(calendarId=cal_id, timeMin=now, singleEvents=True, orderBy='startTime').execute()
     for event in eventsResult['items']:
-		service.events().delete(calendarId=cal_id, eventId=event['id']).execute()
+        service.events().delete(calendarId=cal_id, eventId=event['id']).execute()
 
 def add_event(service, ev, cal_id):
-	service.events().insert(calendarId=cal_id, body=ev).execute()
-	
+    service.events().insert(calendarId=cal_id, body=ev).execute()
+    
 def main():
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
@@ -108,8 +108,8 @@ def main():
         show_end_with_tz = show_end_date_time
         #only add if it's after work on a weekday (keeps  calendar cleaner)
         if (show_start_time >= parser.parse('17:00:00').time()) or (show_start_date_time.strftime('%A') in ('Saturday','Sunday')):
-			ev = build_event(name,run_time,show_start_with_tz,show_end_with_tz,plot,id,year))
-			add_event(service,ev,cal_id)
+            ev = build_event(name,run_time,show_start_with_tz,show_end_with_tz,plot,id,year)
+            add_event(service,ev,cal_id)
 
 if __name__ == '__main__':
     main()
