@@ -1,3 +1,5 @@
 *.pyc
 configs/client_secret.json
 configs/omdbapi.json
+configs/sunray.log
+
