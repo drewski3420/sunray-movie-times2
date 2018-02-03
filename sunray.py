@@ -1,3 +1,4 @@
+import logger as l
 import json
 from datetime import datetime as d
 from bs4 import BeautifulSoup
@@ -5,6 +6,7 @@ import requests
 from dateutil import parser
 import os
 
+logger = l.setup_custom_logger(__name__)
 ENDPOINT = 'http://14438.formovietickets.com:2235/T.ASP'
 
 def get_dates():
@@ -18,6 +20,8 @@ def get_dates():
 	for option in form.find_all('option'):
 		date = d.strptime(option.text,'%a %b %d, %Y') #get date
 		dates.append(date)
+	logger.info('Got Dates')
+	logger.info('Number of dates found: {}'.format(len(dates)))
 	return dates
 
 def get_daily_html(date):
@@ -27,6 +31,7 @@ def get_daily_html(date):
 	r = requests.get(ENDPOINT,params=params, headers={'Connection':'close'})
 	soup = BeautifulSoup(r.text,'html5lib')
 	strings = [text for text in soup.stripped_strings]
+	logger.info('Got Daily Html Strings')
 	return strings
 
 def get_movie_details_from_html(strings):
@@ -98,6 +103,7 @@ def get_omdb_movie_details(movie_name):
         details['plot'] = s.json()['Plot']
         details['id'] = s.json()['imdbID']
         details['year'] = s.json()['Year']
+        logger.info('Got OMDB movie {}, Year {}, ID {}'.format(movie_name,details['year'], details['id']))
     return details
     
 def split_strings_into_movies(strings,date):

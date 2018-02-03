@@ -13,11 +13,14 @@ from bs4 import BeautifulSoup
 import requests
 from dateutil import parser
 import pytz
+import logger as l
 try:
     import argparse
     flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
 except ImportError:
     flags = None
+
+logger = l.setup_custom_logger(__name__)
 
 SCOPES = 'https://www.googleapis.com/auth/calendar'
 CLIENT_SECRET_FILE = 'configs/client_secret.json'
@@ -86,20 +89,23 @@ def add_event(service, ev, cal_id):
     
 def main():
     credentials = get_credentials()
+    logger.info('Got Credentials')
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http)
-    
+    logger.info('Got Service')
     #get calendar ID
     cal_id = get_cal_id(service)
-
+    logger.info('Got Cal_id: {}'.format(cal_id))
     #first delete all upcoming events
     clear_calendar(cal_id,service)
-
+    logger.info('Cleared Calendar')
     #now add new events - first get list of current SunRay showtimes
     movies = sunray.main()
-    
+    logger.info('Got Movies from sunray.py')
+    logger.info('Number of Movies (showtimes) received: {}'.format(len(movies)))
     #now loop through and add event
     for movie in movies:
+        logger.info('Processing movie {}, Date {}, Time {}'.format(movie['name'], movie['date'], movie['show_time']))
         name = movie['name']
         run_time = parser.parse(movie['run_time']).time()
         show_start_date = parser.parse(movie['date'])
@@ -113,8 +119,11 @@ def main():
         show_end_with_tz = show_end_date_time
         #only add if it's after work on a weekday (keeps  calendar cleaner)
         if (show_start_time >= parser.parse('17:00:00').time()) or (show_start_date_time.strftime('%A') in ('Saturday','Sunday')):
+            logger.info('Show time qualifies to be added')
             ev = build_event(name,run_time,show_start_with_tz,show_end_with_tz,plot,id,year)
+            logger.info('Event built')
             add_event(service,ev,cal_id)
+            logger.info('Event added')
 
 if __name__ == '__main__':
     main()
