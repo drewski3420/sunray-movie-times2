@@ -52,10 +52,15 @@ def build_event(name,run_time,start_date,end_date,plot,id,year):
     end_str = end_date.strftime('%Y-%m-%dT%H:%M:%S')
     event['summary'] = name
     event['location'] = '1028 Park St, Jacksonville, FL 32204'
-    description = 'http://www.imdb.com/title/{}/'.format(id)
-    description += '\nYear: {}'.format(year)
-    description += '\nPlot: {}'.format(plot)
-    description += '\nRun Time: {}'.format(run_time)
+    description = ''
+    if id:
+        description += 'http://www.imdb.com/title/{}/'.format(id)
+    if year:
+        description += '\nYear: {}'.format(year)
+    if plot and plot != 'N/A':
+		description += '\nPlot: {}'.format(plot)
+    if run_time:
+		description += '\nRun Time: {}'.format(run_time)
     event['description'] = description
     event['start']['dateTime'] = start_str
     event['start']['timeZone'] = 'America/New_York'

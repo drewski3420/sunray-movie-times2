@@ -64,22 +64,33 @@ def get_omdb_movie_details(movie_name):
                ,'page' : 1
             }
     target_movie = {'movie_name' : 'movie'
-                        ,'id' : '0'
-                        ,'year' : '1901'
-                    }
+                    ,'id' : '0'
+                    ,'year' : '1901'}
+    #populate possible movies
+    movies = []
     while True:
         r = requests.get(URL, params = params)
         results = r.json()
         if results['Response'] == 'False':
-            break
+            break     
         for movie in results['Search']:
-            if movie['Year'] > target_movie['year']:
-                target_movie['movie_name'] = movie['Title']
-                target_movie['id'] = movie['imdbID']
-                target_movie['year'] = movie['Year']
+			movies.append(movie)
         params['page'] += 1
-
-    if target_movie['id'] != '0':
+    #first look for match with exact movie title and a poster
+    for m in movies:
+        if m['Poster'] != 'N/A' and m['Title'].upper() == movie_name.upper() and (int(m['Year']) > int(target_movie['year'])) and (int(m['Year']) <= int(d.now().strftime('%Y'))):
+            target_movie['movie_name'] = m['Title']
+            target_movie['id'] = m['imdbID']
+            target_movie['year'] = m['Year']
+    #if nothing found (id still = 0) now look for the most recent matching movie
+    if target_movie['id'] == '0':
+        for m in movies:
+            if (int(m['Year']) > int(target_movie['year'])) and (int(m['Year']) <= int(d.now().strftime('%Y'))):
+                target_movie['movie_name'] = m['Title']
+                target_movie['id'] = m['imdbID']
+                target_movie['year'] = m['Year']
+    #now we have (or not) our match and let's continue
+    if target_movie['id'] != '0' and target_movie['year'] != '1901':
         params['s'] = ''
         params['i'] = target_movie['id']
         params['y'] = target_movie['year']
