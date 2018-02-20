@@ -119,9 +119,11 @@ def main():
 		movies = sunray.main()
 		logger.info('Got Movies from sunray.py')
 		logger.info('Number of Movies (showtimes) received: {}'.format(len(movies)))
+		movie_counter = 0
 		#now loop through and add event
 		for movie in movies:
-			logger.info('Processing movie {}, Date {}, Time {}'.format(movie['name'], movie['date'], movie['show_time']))
+			movie_counter += 1
+			logger.info('Processing movie #{}: {}, Date {}, Time {}'.format(movie_counter, movie['name'], movie['date'], movie['show_time']))
 			name = movie['name']
 			run_time = parser.parse(movie['run_time']).time()
 			show_start_date = parser.parse(movie['date'])
@@ -140,6 +142,8 @@ def main():
 				logger.info('Event built')
 				add_event(service,ev,cal_id)
 				logger.info('Event added')
+			else:
+				logger.info('Show time does not qualify')
 	except Exception as e:
 		logging.exception('Error in main()',exc_info=True)
 
