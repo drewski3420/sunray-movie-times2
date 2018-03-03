@@ -1,8 +1,7 @@
 from __future__ import print_function
 import httplib2
 import os
-#import sunray
-import sunray_API
+import sunray_API as sunray
 from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
@@ -46,7 +45,7 @@ def get_credentials():
 				credentials = tools.run(flow, store)
 			print('Storing credentials to ' + credential_path)
 	except Exception as e:
-		logging.exception('Error in get_credentials()',exc_info=True)
+		logger.exception('Error in get_credentials()',exc_info=True)
 	return credentials
 
 def build_event(name,run_time,start_date,end_date,plot,id,year):
@@ -75,7 +74,7 @@ def build_event(name,run_time,start_date,end_date,plot,id,year):
 		event['end']['dateTime'] = end_str
 		event['end']['timeZone'] = 'America/New_York'
 	except Exception as e:
-		logging.exception('Error in build_event({}, {})'.format(name,start_date),exc_info=True)
+		logger.exception('Error in build_event({}, {})'.format(name,start_date),exc_info=True)
 	return event
 
 def get_cal_id(service):
@@ -85,7 +84,7 @@ def get_cal_id(service):
 			if cal['summary'] == 'Sun-Ray Cinema':
 				cal_id = cal['id']
 	except Exception as e:
-		logging.exception('Error in get_cal_id()',exc_info=True)
+		logger.exception('Error in get_cal_id()',exc_info=True)
 	return cal_id
 	
 def clear_calendar(cal_id,service):
@@ -95,13 +94,13 @@ def clear_calendar(cal_id,service):
 		for event in eventsResult['items']:
 			service.events().delete(calendarId=cal_id, eventId=event['id']).execute()
 	except Exception as e:
-		logging.exception('Error in clear_calendar({})'.format(cal_id),exc_info=True)
+		logger.exception('Error in clear_calendar({})'.format(cal_id),exc_info=True)
 
 def add_event(service, ev, cal_id):
 	try:
 		service.events().insert(calendarId=cal_id, body=ev).execute()
 	except Exception as e:
-		logging.exception('Error in add_event()',exc_info=True)
+		logger.exception('Error in add_event()',exc_info=True)
 	
 def main():
 	try:
@@ -146,7 +145,7 @@ def main():
 			else:
 				logger.info('Show time does not qualify')
 	except Exception as e:
-		logging.exception('Error in main()',exc_info=True)
+		logger.exception('Error in main()',exc_info=True)
 
 if __name__ == '__main__':
 	logger.info('-----------------------------------Start of Script---------------------------------------')
