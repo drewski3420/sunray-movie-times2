@@ -48,7 +48,7 @@ def get_credentials():
 		logger.exception('Error in get_credentials()',exc_info=True)
 	return credentials
 
-def build_event(name,run_time,start_date,end_date,plot,id,year):
+def build_event(name,run_time,start_date,end_date,plot,id,year,official_url,imdb_url):
 	try:
 		event = {}
 		event['start'] = {}
@@ -60,8 +60,10 @@ def build_event(name,run_time,start_date,end_date,plot,id,year):
 		event['summary'] = name
 		event['location'] = '1028 Park St, Jacksonville, FL 32204'
 		description = ''
-		if id:
-			description += 'http://www.imdb.com/title/{}/'.format(id)
+		if official_url:
+			description += '\nMovie URL: '.format(official_url)
+		if imdb_url:
+			description += '\nIMDB URL: '.format(imdb_url)
 		if year:
 			description += '\nYear: {}'.format(year)
 		if plot and plot != 'N/A':
@@ -131,6 +133,8 @@ def main():
 			plot = movie['plot']
 			id = movie['id']
 			year = movie['year']
+			imdb_url = movie['imdb_url']
+			official_url = movie['official_url']
 			show_start_date_time = datetime.datetime.combine(show_start_date,show_start_time)
 			show_end_date_time = show_start_date_time + timedelta(hours=run_time.hour,minutes=run_time.minute)
 			show_start_with_tz = show_start_date_time
@@ -138,7 +142,7 @@ def main():
 			#only add if it's after work on a weekday (keeps  calendar cleaner)
 			if (show_start_time >= parser.parse('17:00:00').time()) or (show_start_date_time.strftime('%A') in ('Saturday','Sunday')):
 				logger.info('Show time qualifies to be added')
-				ev = build_event(name,run_time,show_start_with_tz,show_end_with_tz,plot,id,year)
+				ev = build_event(name,run_time,show_start_with_tz,show_end_with_tz,plot,id,year,official_url,imdb_url)
 				logger.info('Event built')
 				add_event(service,ev,cal_id)
 				logger.info('Event added')

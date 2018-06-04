@@ -59,6 +59,13 @@ def get_movie_details_from_html(strings):
 	except Exception as e:
 		logging.exception('Error in get_movie_details_from_html()',exc_info=True)
 	return strings[movie_start:]
+def run_test():
+	print('what')
+	dir = os.path.dirname(__file__)
+	fn = os.path.join(dir, 'configs/omdbapi.json')
+	with open(fn) as data_file:
+		apikey = json.load(data_file)['apikey']
+	print(apikey)
 
 def get_omdb_movie_details(movie_name):
 	try:
@@ -207,5 +214,6 @@ def main():
 	
 	
 if __name__ == '__main__':
-	m = main()
-	print(json.dumps(m,indent=4))
+	run_test()
+	#m = main()
+	#print(json.dumps(m,indent=4))
