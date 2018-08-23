@@ -129,7 +129,7 @@ def get_omdb_movie_details(movie_name, apikey):
 			params['page'] += 1
 		#first look for match with exact movie title and a poster
 		for m in movies:
-			if m['Poster'] != 'N/A' and m['Title'].upper() == movie_name.upper() and (int(m['Year']) > int(target_movie['year'])) and (int(m['Year']) <= int(d.now().strftime('%Y'))):
+			if m['Poster'].decode('utf-8') != 'N/A' and m['Title'].decode('utf-8').upper() == movie_name.decode('utf-8').upper() and (int(m['Year'].decode('utf-8')) > int(target_movie['year'].decode('utf-8'))) and (int(m['Year'].decode('utf-8')) <= int(d.now().strftime('%Y'))):
 				target_movie['movie_name'] = m['Title']
 				target_movie['id'] = m['imdbID']
 				target_movie['year'] = m['Year']
